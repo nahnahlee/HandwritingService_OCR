@@ -1,0 +1,23 @@
+# Python 가상환경
+.venv/
+
+# Django/백엔드 임시 파일
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite3
+
+# OCR 변환된 데이터 (이미지/라벨링 결과)
+dataset/images/
+dataset/labels/
+
+# YOLO/Training 아웃풋
+runs/
+yolov8n.pt
+*.pt
+
+# VSCode
+.vscode/
+
+# Mac
+.DS_Store
