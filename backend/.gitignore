@@ -1,23 +1,46 @@
-# Python 가상환경
-.venv/
+# ======================
+# Node / Frontend
+# ======================
+node_modules/
+build/
+.env
 
-# Django/백엔드 임시 파일
+# ======================
+# Python / Backend
+# ======================
+.venv/
+env/
+venv/
 __pycache__/
 *.py[cod]
+*.egg-info/
+
+# Django/백엔드 임시 파일
 *.db
 *.sqlite3
 
-# OCR 변환된 데이터 (이미지/라벨링 결과)
+# ======================
+# OCR 데이터 & 결과
+# ======================
+backend/data/
+backend/uploads/
+backend/results/
 dataset/images/
 dataset/labels/
 
-# YOLO/Training 아웃풋
+# YOLO / Training outputs
 runs/
-yolov8n.pt
 *.pt
+FUNIT_checkpoints/
 
-# VSCode
+# ======================
+# IDE / OS
+# ======================
 .vscode/
-
-# Mac
 .DS_Store
+Thumbs.db
+
+# ======================
+# 기타 로그
+# ======================
+*.log
