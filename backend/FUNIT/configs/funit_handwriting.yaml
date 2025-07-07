@@ -1,0 +1,46 @@
+# backend/FUNIT/configs/funit_handwriting.yaml
+
+# logger options
+image_save_iter: 2500         # How often to save output images during training
+image_display_iter: 100       # How often to display output images during training
+snapshot_save_iter: 5000      # How often to save trained models
+log_iter: 1                   # How often to log training stats
+
+# optimization options
+max_iter: 100000              # maximum number of training iterations
+weight_decay: 0.0001          # weight decay
+lr_gen: 0.0001                # learning rate for the generator
+lr_dis: 0.0001                # learning rate for the discriminator
+init: kaiming                 # initialization: [gaussian/kaiming/xavier/orthogonal]
+gan_w: 1                      # weight of adversarial loss
+fm_w: 1                       # weight on feature‐matching loss
+r_w: 0.1                      # weight of reconstruction loss
+
+# model options
+gen:
+  nf: 64                      # base filters in generator
+  n_res_blks: 2               # residual blocks in content encoder/decoder
+  nf_mlp: 256                 # base filters in MLP
+  latent_dim: 64              # dimension of latent style code
+  n_mlp_blks: 3               # number of MLP blocks
+  n_downs_content: 3          # downsampling layers in content encoder
+  n_downs_class: 4            # downsampling layers in style encoder
+
+dis:
+  nf: 64                      # base filters in discriminator
+  n_res_blks: 10              # residual blocks in discriminator
+  num_classes: 1              # single style domain (your handwriting)
+
+# data options
+num_workers: 4
+batch_size: 16
+new_size: 256                 # resize shorter side to this size
+crop_image_height: 256        # crop height
+crop_image_width: 256         # crop width
+
+# point to your skeleton (A) folder and list file
+data_folder_train: ../data/hand/A
+data_list_train:   ../data/hand/train_A.txt
+
+data_folder_test:  ../data/hand/A
+data_list_test:    ../data/hand/test_A.txt
