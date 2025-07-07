@@ -50,17 +50,8 @@ data_list_test:    "../data/hand/test_A.txt"
 #   content ← data_folder_train / data_list_train
 #   style   ← data_folder_train_class / data_list_train_class
 # 의 쌍을 사용합니다.
-data_folder_train_class: "../data/hand/B"
-data_list_train_class:   "../data/hand/train_B.txt"
-
-data_folder_test_class:  "../data/hand/B"
-data_list_test_class:    "../data/hand/test_B.txt"
-
-
-# ─── style(class) 도메인 ───────────────────────────
-# content: A, B 가 섞인 리스트를 classification 에도 같이 쓰게 합니다.
 data_folder_train_class: "../data/hand"
-data_list_train_class:   "../data/hand/train_AB.txt"
+data_list_train_class:   "../data/hand/train_user.txt"
 
 data_folder_test_class:  "../data/hand"
-data_list_test_class:    "../data/hand/test_AB.txt"
+data_list_test_class:    "../data/hand/test_user.txt"
