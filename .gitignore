@@ -28,7 +28,6 @@ __pycache__/
 # ======================
 # OCR 데이터 & 결과
 # ======================
-backend/data/
 backend/uploads/
 backend/results/
 dataset/images/
