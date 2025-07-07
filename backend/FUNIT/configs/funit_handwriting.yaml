@@ -1,46 +1,62 @@
 # backend/FUNIT/configs/funit_handwriting.yaml
 
 # ─── Logger 옵션 ────────────────────────────────────────────
-image_save_iter:    2500    # 얼마나 자주 결과 이미지 저장
-image_display_iter: 100     # 얼마나 자주 화면에 결과 표시
-snapshot_save_iter: 5000    # 얼마나 자주 모델 스냅샷 저장
-log_iter:           1       # 얼마나 자주 로그 기록
+image_save_iter:    2500
+image_display_iter: 100
+snapshot_save_iter: 5000
+log_iter:           1
 
 # ─── 최적화 옵션 ────────────────────────────────────────────
-max_iter:      100000      # 총 학습 반복 수
-weight_decay:  0.0001      # 가중치 감소
-lr_gen:        0.0001      # 생성기 학습률
-lr_dis:        0.0001      # 판별기 학습률
-init:          kaiming     # 파라미터 초기화 방식
-gan_w:         1           # GAN 손실 가중치
-fm_w:          1           # feature‐matching 손실 가중치
-r_w:           0.1         # 재구성 손실 가중치
+max_iter:      100000
+weight_decay:  0.0001
+lr_gen:        0.0001
+lr_dis:        0.0001
+init:          kaiming
+gan_w:         1
+fm_w:          1
+r_w:           0.1
 
 # ─── 모델 옵션 ──────────────────────────────────────────────
 gen:
-  nf:             64        # 생성기 베이스 필터 수
-  n_res_blks:     2         # 콘텐츠 인코더/디코더 레지듀얼 블록 수
-  nf_mlp:         256       # MLP 베이스 필터 수
-  latent_dim:     64        # 스타일 잠재 벡터 차원
-  n_mlp_blks:     3         # MLP 블록 반복 수
-  n_downs_content:3         # 콘텐츠 인코더 다운샘플 수
-  n_downs_class:  4         # 스타일 인코더 다운샘플 수
+  nf:              64
+  n_res_blks:      2
+  nf_mlp:          256
+  latent_dim:      64
+  n_mlp_blks:      3
+  n_downs_content: 3
+  n_downs_class:   4
 
 dis:
-  nf:         64            # 판별기 베이스 필터 수
-  n_res_blks: 10            # 판별기 레지듀얼 블록 수
-  num_classes: 1            # 스타일 도메인(B)는 한 명의 필체
+  nf:          64
+  n_res_blks:  10
+  num_classes: 1
 
 # ─── 데이터 옵션 ────────────────────────────────────────────
-num_workers:        4        # DataLoader 워커 수
-batch_size:         16       # 배치 크기
-new_size:           256      # 짧은 변 길이를 이 크기로 리사이즈
-crop_image_height:  256      # 랜덤 크롭 높이
-crop_image_width:   256      # 랜덤 크롭 폭
+num_workers:       4
+batch_size:        16
+new_size:          256
+crop_image_height: 256
+crop_image_width:  256
 
-# 콘텐츠 도메인(A): 스켈레톤(폰트) 이미지
-data_folder_train:  ../data/hand/A,../data/hand/B
-data_list_train:    ../data/hand/train_A.txt,../data/hand/train_B.txt
+# ─── A 도메인 (폰트 스켈레톤) ─────────────────────────────────
+data_folder_train:
+  - ../data/hand/A
+data_list_train:
+  - ../data/hand/train_A.txt
 
-data_folder_test:   ../data/hand/A,../data/hand/B
-data_list_test:     ../data/hand/test_A.txt,../data/hand/test_B.txt
+data_folder_test:
+  - ../data/hand/A
+data_list_test:
+  - ../data/hand/test_A.txt
+
+# ─── B 도메인 (실제 손글씨 스타일) ────────────────────────────
+# (FUNIT 은 첫번째 리스트를 content, 두번째 리스트를 style 로 인식합니다)
+data_folder_train_class:
+  - ../data/hand/B
+data_list_train_class:
+  - ../data/hand/train_B.txt
+
+data_folder_test_class:
+  - ../data/hand/B
+data_list_test_class:
+  - ../data/hand/test_B.txt
