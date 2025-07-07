@@ -1,2 +1,4 @@
-C:\Users\USER\Desktop\HandwritingService_OCR\backend\data\hand\B\page_004.png
-C:\Users\USER\Desktop\HandwritingService_OCR\backend\data\hand\B\page_002.png
+page_004.png
+EnglishPage_004.jpg
+page_002.png
+page_015.png
