@@ -4,6 +4,12 @@
 node_modules/
 build/
 .env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/.pnp
+.pnp.js
+/coverage
 
 # ======================
 # Python / Backend
@@ -44,6 +50,13 @@ Thumbs.db
 # 기타 로그
 # ======================
 *.log
+*.tar.gz
+*.zip
+*.pkl
+*ipynb
+*.pyc
 
 
+# Tesseract OCR 데이터
 tessdata/
+*.traineddata
