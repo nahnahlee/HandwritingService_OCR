@@ -29,16 +29,14 @@ dis:
   n_res_blks:  10
   num_classes: 2    # A vs user 두 개 도메인
 
-# ─── 데이터 옵션 ────────────────────────────────────────────
-num_workers:       4
-batch_size:        16
-new_size:          128
-crop_image_height: 128
-crop_image_width:  128
+# Content loader (A)
+data_folder_train:       "../data/hand/A"
+data_list_train:         "../data/hand/train_A.txt"
+data_folder_test:        "../data/hand/A"
+data_list_test:          "../data/hand/train_A.txt"  # A는 테스트 없이 전부 훈련
 
-# ─── AB 통합 도메인 ────────────────────────────────────────
-data_folder_train: "../data/hand"
-data_list_train:   "../data/hand/train_AB.txt"
-
-data_folder_test:  "../data/hand"
-data_list_test:    "../data/hand/test_AB.txt"
+# Style loader (A+B merged)
+data_folder_train_class: "../data/hand"
+data_list_train_class:   "../data/hand/train_AB.txt"
+data_folder_test_class:  "../data/hand"
+data_list_test_class:    "../data/hand/test_AB.txt"
