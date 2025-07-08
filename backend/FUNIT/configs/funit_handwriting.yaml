@@ -43,7 +43,7 @@ data_folder_train: "../data/hand/A"
 data_list_train:   "../data/hand/train_A.txt"
 
 data_folder_test:  "../data/hand/A"
-data_list_test:    "../data/hand/test_A.txt"
+data_list_test:    "../data/hand/train_A.txt"
 
 # ─── B 도메인 (실제 손글씨 스타일) ────────────────────────────
 # FUNIT 의 get_train_loaders() 에서는
