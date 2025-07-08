@@ -187,11 +187,15 @@ class AdaptiveInstanceNorm2d(nn.Module):
         running_var = self.running_var.repeat(b)
         x_reshaped = x.contiguous().view(1, b * c, *x.size()[2:])
         
-        # blocks.py 189줄 전후
-        print(f"▶ BatchNorm in_channels: {x.shape[1]}, weight numel: {self.norm.weight.numel()}")
+        # 디버깅: BatchNorm weight 개수 vs 입력 채널 확인
+        # AdaptiveInstanceNorm2d 등은 self.norm이 없으므로, self 자체에 weight가 달려 있을 수도 있습니다.
+        norm_layer = getattr(self, "norm", self)
+        w_numel = norm_layer.weight.numel() if hasattr(norm_layer, "weight") else None
+        print(f"▶ Norm layer: {norm_layer.__class__.__name__}, in_channels: {x.shape[1]}, weight numel: {w_numel}")
+ 
 
         out = F.batch_norm(
-            x_reshaped, running_mean, running_var, self.weight, self.bias,
+            x_reshaped, running_mean, running_var, norm_layer.weight, norm_layer.bias,
             True, self.momentum, self.eps)
         return out.view(b, c, *x.size()[2:])
 
