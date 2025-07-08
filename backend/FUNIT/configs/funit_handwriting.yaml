@@ -18,7 +18,7 @@ r_w:           0.1
 gen:
   nf:              64
   n_res_blks:      2
-  nf_mlp:          128
+  nf_mlp:          256
   latent_dim:      64
   n_mlp_blks:      3
   n_downs_content: 3
