@@ -44,8 +44,8 @@ data_folder_test:        "../data/hand/A"
 data_list_test:          "../data/hand/train_A.txt"   # A는 테스트 없이 모두 학습
 
 # ─── B 도메인 (실제 손글씨 스타일) ────────────────────────────
-data_folder_train_class: "../data/hand/B"
+data_folder_train_class: "../data/hand/B/user"
 data_list_train_class:   "../data/hand/train_user.txt"
 
-data_folder_test_class:  "../data/hand/B"
+data_folder_test_class:  "../data/hand/B/user"
 data_list_test_class:    "../data/hand/test_user.txt"
