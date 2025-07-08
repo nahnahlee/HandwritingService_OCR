@@ -1,5 +1,3 @@
-# backend/FUNIT/configs/funit_handwriting.yaml
-
 # ─── Logger 옵션 ────────────────────────────────────────────
 image_save_iter:    2500
 image_display_iter: 100
@@ -29,7 +27,7 @@ gen:
 dis:
   nf:          64
   n_res_blks:  10
-  num_classes: 2
+  num_classes: 2    # A vs user 두 개 도메인
 
 # ─── 데이터 옵션 ────────────────────────────────────────────
 num_workers:       4
@@ -39,17 +37,13 @@ crop_image_height: 256
 crop_image_width:  256
 
 # ─── A 도메인 (폰트 스켈레톤) ─────────────────────────────────
-data_folder_train: "../data/hand/A"
-data_list_train:   "../data/hand/train_A.txt"
+data_folder_train:       "../data/hand/A"
+data_list_train:         "../data/hand/train_A.txt"
 
-data_folder_test:  "../data/hand/A"
-data_list_test:    "../data/hand/train_A.txt"
+data_folder_test:        "../data/hand/A"
+data_list_test:          "../data/hand/train_A.txt"   # A는 테스트 없이 모두 학습
 
 # ─── B 도메인 (실제 손글씨 스타일) ────────────────────────────
-# FUNIT 의 get_train_loaders() 에서는
-#   content ← data_folder_train / data_list_train
-#   style   ← data_folder_train_class / data_list_train_class
-# 의 쌍을 사용합니다.
 data_folder_train_class: "../data/hand"
 data_list_train_class:   "../data/hand/train_user.txt"
 
