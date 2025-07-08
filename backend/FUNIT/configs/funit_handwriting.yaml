@@ -27,7 +27,7 @@ gen:
 dis:
   nf:          64
   n_res_blks:  10
-  num_classes: 2    # A vs user 두 개 도메인
+  num_classes: 1    # A vs user 두 개 도메인
 
 # ─── 데이터 옵션 ────────────────────────────────────────────
 num_workers:       4
