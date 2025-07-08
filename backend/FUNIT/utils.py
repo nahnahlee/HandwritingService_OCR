@@ -138,7 +138,8 @@ def get_train_loaders(conf):
         height      = height,
         width       = width,
         crop        = True,
-        num_workers = 1
+        num_workers = 1,
+        drop_last = False
     )
 
     # test class loader (B)
@@ -150,7 +151,8 @@ def get_train_loaders(conf):
         height      = height,
         width       = width,
         crop        = True,
-        num_workers = 1
+        num_workers = 1,
+        drop_last = False
     )
 
     return (
