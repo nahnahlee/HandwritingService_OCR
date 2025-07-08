@@ -49,3 +49,10 @@ data_list_train_class:   "../data/hand/train_user.txt"
 
 data_folder_test_class:  "../data/hand/B/user"
 data_list_test_class:    "../data/hand/test_user.txt"
+
+# ─── 스타일 도메인 (A vs B/user): style loader
+data_folder_train_class: "../data/hand"             # 공통 베이스 폴더
+data_list_train_class:   "../data/hand/train_AB.txt"
+
+data_folder_test_class:  "../data/hand"
+data_list_test_class:    "../data/hand/test_AB.txt"
