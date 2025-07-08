@@ -186,6 +186,10 @@ class AdaptiveInstanceNorm2d(nn.Module):
         running_mean = self.running_mean.repeat(b)
         running_var = self.running_var.repeat(b)
         x_reshaped = x.contiguous().view(1, b * c, *x.size()[2:])
+        
+        # blocks.py 189줄 전후
+        print(f"▶ BatchNorm in_channels: {x.shape[1]}, weight numel: {self.norm.weight.numel()}")
+
         out = F.batch_norm(
             x_reshaped, running_mean, running_var, self.weight, self.bias,
             True, self.momentum, self.eps)
