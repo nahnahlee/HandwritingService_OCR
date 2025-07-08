@@ -1,4 +1,4 @@
-user/page_004.png 1
-user/EnglishPage_004.jpg 1
-user/page_002.png 1
-user/page_015.png 1
+page_004.png 1
+EnglishPage_004.jpg 1
+page_002.png 1
+page_015.png 1

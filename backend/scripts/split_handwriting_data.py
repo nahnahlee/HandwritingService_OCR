@@ -23,11 +23,7 @@ def split_domain(domain_dir: str,
         print(f"⚠️  {domain_dir}에 이미지가 하나도 없습니다.")
         return
 
-    # 2) 상대경로 생성 및 슬래시 통일
-    rel_paths = [
-        os.path.join(prefix, fn).replace("\\", "/")
-        for fn in fnames
-    ]
+    rel_paths = fnames
 
     # 3) shuffle & split
     random.seed(42)
