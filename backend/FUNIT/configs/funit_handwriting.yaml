@@ -36,23 +36,9 @@ new_size:          128
 crop_image_height: 128
 crop_image_width:  128
 
-# ─── A 도메인 (폰트 스켈레톤) ─────────────────────────────────
-data_folder_train:       "../data/hand/A"
-data_list_train:         "../data/hand/train_A.txt"
+# ─── AB 통합 도메인 ────────────────────────────────────────
+data_folder_train: "../data/hand"
+data_list_train:   "../data/hand/train_AB.txt"
 
-data_folder_test:        "../data/hand/A"
-data_list_test:          "../data/hand/train_A.txt"   # A는 테스트 없이 모두 학습
-
-# ─── B 도메인 (실제 손글씨 스타일) ────────────────────────────
-data_folder_train_class: "../data/hand/B/user"
-data_list_train_class:   "../data/hand/train_user.txt"
-
-data_folder_test_class:  "../data/hand/B/user"
-data_list_test_class:    "../data/hand/test_user.txt"
-
-# ─── 스타일 도메인 (A vs B/user): style loader
-data_folder_train_class: "../data/hand"             # 공통 베이스 폴더
-data_list_train_class:   "../data/hand/train_AB.txt"
-
-data_folder_test_class:  "../data/hand"
-data_list_test_class:    "../data/hand/test_AB.txt"
+data_folder_test:  "../data/hand"
+data_list_test:    "../data/hand/test_AB.txt"
