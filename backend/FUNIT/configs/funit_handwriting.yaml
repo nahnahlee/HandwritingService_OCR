@@ -17,7 +17,7 @@ r_w:           0.1
 # ─── 모델 옵션 ──────────────────────────────────────────────
 gen:
   nf:              64
-  n_res_blks:      1
+  n_res_blks:      2
   nf_mlp:          128
   latent_dim:      64
   n_mlp_blks:      3
@@ -26,7 +26,7 @@ gen:
 
 dis:
   nf:          64
-  n_res_blks:  5
+  n_res_blks:  10
   num_classes: 2    # A vs user 두 개 도메인
 
 # ─── 데이터 옵션 ────────────────────────────────────────────
