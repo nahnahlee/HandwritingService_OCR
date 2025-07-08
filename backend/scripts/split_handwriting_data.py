@@ -1,67 +1,48 @@
+# backend/scripts/split_handwriting_data.py
+
 import os
 import random
 
-def split_domain(domain_dir: str,
-                 out_dir: str,
-                 prefix: str,
-                 train_ratio: float = 0.8):
-    """
-    domain_dir 안의 이미지(.png/.jpg/.jpeg) 파일 이름만
-    train_<prefix>.txt / test_<prefix>.txt 로 분할 기록합니다.
-    한 줄에 '파일명'만 쓰고, 슬래시도 '/'로 통일합니다.
-    """
-    # 1) 파일명 수집
-    fnames = sorted([
+def write_all_A(domain_dir: str, out_dir: str):
+    """A 폴더의 모든 이미지 이름만 모아서 train_A.txt에 저장"""
+    fnames = sorted(
         fn for fn in os.listdir(domain_dir)
         if fn.lower().endswith((".png", ".jpg", ".jpeg"))
-    ])
-    if not fnames:
-        print(f"⚠️  {domain_dir}에 이미지가 하나도 없습니다.")
-        return
+    )
+    path = os.path.join(out_dir, "train_A.txt")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(fnames))
+    print(f"✅ A 도메인 전체 작성 → {path} ({len(fnames)}개)")
 
-    # 2) 상대경로(prefix/파일명) 생성
-    rel_paths = [ f"{prefix}/{fn}" for fn in fnames ]
-
-    # 3) shuffle & split
+def split_user(domain_dir: str, out_dir: str, prefix: str="user", ratio: float=0.8):
+    """
+    B/user 폴더만 랜덤 섞어서
+    train_user.txt / test_user.txt 로 분할합니다.
+    리스트 안에는 상대경로 ‘user/파일명’ 만 기록.
+    """
+    fnames = sorted(
+        fn for fn in os.listdir(domain_dir)
+        if fn.lower().endswith((".png", ".jpg", ".jpeg"))
+    )
+    rel = [f"{prefix}/{fn}" for fn in fnames]
     random.seed(42)
-    random.shuffle(rel_paths)
-    n_train = int(len(rel_paths) * train_ratio)
-    train_list = rel_paths[:n_train]
-    test_list  = rel_paths[n_train:]
+    random.shuffle(rel)
+    n_train = int(len(rel)*ratio)
+    train, test = rel[:n_train], rel[n_train:]
 
-    # 4) 쓰기
-    os.makedirs(out_dir, exist_ok=True)
-    train_txt = os.path.join(out_dir, f"train_{prefix}.txt")
-    test_txt  = os.path.join(out_dir, f"test_{prefix}.txt")
-
-    with open(train_txt, "w", encoding="utf-8") as f:
-        f.write("\n".join(train_list))
-
-    with open(test_txt, "w", encoding="utf-8") as f:
-        f.write("\n".join(test_list))
-
-    print(f"✅ {prefix} 분할 완료: {len(train_list)} train / {len(test_list)} test")
-    print(f"   → {train_txt}")
-    print(f"   → {test_txt}\n")
-
+    for name, lst in [("train_user.txt", train), ("test_user.txt", test)]:
+        p = os.path.join(out_dir, name)
+        with open(p, "w", encoding="utf-8") as f:
+            f.write("\n".join(lst))
+        print(f"✅ user 도메인 {name} 작성 → {p} ({len(lst)}개)")
 
 if __name__ == "__main__":
-    base = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "data", "hand")
-    )
+    base = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), "..", "data", "hand"
+    ))
 
-    # A 도메인: 100% train
-    split_domain(
-        domain_dir=os.path.join(base, "A"),
-        out_dir=base,
-        prefix="A",
-        train_ratio=1.0,
-    )
+    # 1) A: 모든 글자 전부 학습(train only)
+    write_all_A(os.path.join(base, "A"), base)
 
-    # B/user 도메인: 80% train, 20% test
-    split_domain(
-        domain_dir=os.path.join(base, "B", "user"),
-        out_dir=base,
-        prefix="user",
-        train_ratio=0.8,
-    )
+    # 2) user: 80% train / 20% test
+    split_user(os.path.join(base, "B", "user"), base)
