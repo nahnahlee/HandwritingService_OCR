@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2019 NVIDIA Corporation.  All rights reserved.
-Licensed under the CC BY-NC-SA 4.0 license
-(https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
-"""
-import os
 from PIL import Image
+import os
 import torch.utils.data as data
 
 
@@ -14,38 +9,22 @@ def default_loader(path):
 
 def default_filelist_reader(filelist):
     """
-    filelist 파일의 각 줄을
-      rel/path.png
-    또는
-      rel/path.png LABEL
-    형식으로 읽고,
-    (path, label) 튜플 리스트를 반환합니다.
-    LABEL이 없으면 0을 기본값으로 사용합니다.
+    파일 리스트를 읽어들입니다. 각 줄에 "경로 레이블" 형식이 있을 경우, 레이블을 파싱하여 저장합니다.
     """
-    entries = []
+    items = []
     with open(filelist, 'r', encoding='utf-8') as rf:
-        for raw in rf:
-            line = raw.strip()
-            if not line:
+        for line in rf:
+            parts = line.strip().split()
+            if not parts:
                 continue
-            parts = line.split()
-            if len(parts) == 1:
-                entries.append((parts[0], 0))
-            else:
-                try:
-                    label = int(parts[1])
-                except ValueError:
-                    label = 0
-                entries.append((parts[0], label))
-    return entries
+            img_path = parts[0]
+            # 두 번째 토큰이 있으면 레이블, 없으면 0으로
+            label = int(parts[1]) if len(parts) > 1 else 0
+            items.append((img_path, label))
+    return items
 
 
 class ImageLabelFilelist(data.Dataset):
-    """
-    filelist 안의 (rel_path, label) 쌍을 읽어
-    root/rel_path 에서 이미지를 로드하고,
-    (img_tensor, label) 을 반환합니다.
-    """
     def __init__(self,
                  root,
                  filelist,
@@ -54,31 +33,28 @@ class ImageLabelFilelist(data.Dataset):
                  loader=default_loader,
                  return_paths=False):
         self.root = root
-        # 읽어서 [(rel_path, label), ...] 리스트로 저장
+        # filelist_reader 리턴값이 (path, label) 튜플 리스트
         self.imgs = filelist_reader(filelist)
         self.transform = transform
         self.loader = loader
         self.return_paths = return_paths
 
-        # 클래스 수는 레이블의 유니크 개수
-        labels = [lab for _, lab in self.imgs]
-        self.classes = sorted(set(labels))
-        self.num_classes = len(self.classes)
-
+        # 도메인 개수는 파일에 들어있는 유니크 레이블 수
+        labels = sorted(set(label for _, label in self.imgs))
         print('Data loader')
         print(f"\tRoot: {self.root}")
         print(f"\tList: {filelist}")
-        print(f"\tNumber of classes: {self.num_classes}")
+        print(f"\tNumber of classes: {len(labels)}")
 
     def __getitem__(self, index):
         rel_path, label = self.imgs[index]
-        img = self.loader(os.path.join(self.root, rel_path))
+        full_path = os.path.join(self.root, rel_path)
+        img = self.loader(full_path)
         if self.transform is not None:
             img = self.transform(img)
         if self.return_paths:
-            return img, label, os.path.join(self.root, rel_path)
-        else:
-            return img, label
+            return img, label, full_path
+        return img, label
 
     def __len__(self):
         return len(self.imgs)
