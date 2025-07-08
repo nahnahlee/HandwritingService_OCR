@@ -36,28 +36,30 @@ def loader_from_list(
         shuffle=True,
         center_crop=False,
         return_paths=False,
-        drop_last=True):
+        drop_last=True):           # <- 기본값 True
     transform_list = [transforms.ToTensor(),
-                      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+                      transforms.Normalize((0.5, 0.5, 0.5),
+                                           (0.5, 0.5, 0.5))]
     if center_crop:
-        transform_list = [transforms.CenterCrop((height, width))] + \
-                         transform_list if crop else transform_list
+        transform_list = [transforms.CenterCrop((height, width))] + transform_list \
+                         if crop else transform_list
     else:
-        transform_list = [transforms.RandomCrop((height, width))] + \
-                         transform_list if crop else transform_list
+        transform_list = [transforms.RandomCrop((height, width))] + transform_list \
+                         if crop else transform_list
     transform_list = [transforms.Resize(new_size)] + transform_list \
-        if new_size is not None else transform_list
+                     if new_size is not None else transform_list
     if not center_crop:
         transform_list = [transforms.RandomHorizontalFlip()] + transform_list
+
     transform = transforms.Compose(transform_list)
     dataset = ImageLabelFilelist(root,
                                  file_list,
                                  transform,
                                  return_paths=return_paths)
     loader = DataLoader(dataset,
-                        batch_size,
+                        batch_size=batch_size,
                         shuffle=shuffle,
-                        drop_last=drop_last,
+                        drop_last=drop_last,     # <- 여기!
                         num_workers=num_workers)
     return loader
 
@@ -68,33 +70,36 @@ def get_evaluation_loaders(conf, shuffle_content=False):
     new_size = conf['new_size']
     width = conf['crop_image_width']
     height = conf['crop_image_height']
+
     content_loader = loader_from_list(
-            root=conf['data_folder_train'],
-            file_list=conf['data_list_train'],
-            batch_size=batch_size,
-            new_size=new_size,
-            height=height,
-            width=width,
-            crop=True,
-            num_workers=num_workers,
-            shuffle=shuffle_content,
-            center_crop=True,
-            return_paths=True,
-            drop_last=False)
+        root=conf['data_folder_train'],
+        file_list=conf['data_list_train'],
+        batch_size=batch_size,
+        new_size=new_size,
+        height=height,
+        width=width,
+        crop=True,
+        num_workers=num_workers,
+        shuffle=shuffle_content,
+        center_crop=True,
+        return_paths=True,
+        drop_last=False   # 평가할 때도 마지막 배치 버리지 않음
+    )
 
     class_loader = loader_from_list(
-            root=conf['data_folder_test'],
-            file_list=conf['data_list_test'],
-            batch_size=batch_size * conf['k_shot'],
-            new_size=new_size,
-            height=height,
-            width=width,
-            crop=True,
-            num_workers=1,
-            shuffle=False,
-            center_crop=True,
-            return_paths=True,
-            drop_last=False)
+        root=conf['data_folder_test'],
+        file_list=conf['data_list_test'],
+        batch_size=batch_size * conf['k_shot'],
+        new_size=new_size,
+        height=height,
+        width=width,
+        crop=True,
+        num_workers=1,
+        shuffle=False,
+        center_crop=True,
+        return_paths=True,
+        drop_last=False
+    )
     return content_loader, class_loader
 
 
@@ -105,7 +110,7 @@ def get_train_loaders(conf):
     width        = conf['crop_image_width']
     height       = conf['crop_image_height']
 
-    # content loader: A 도메인
+    # 1) A 도메인 content loader
     train_content_loader = loader_from_list(
         root        = conf['data_folder_train'],
         file_list   = conf['data_list_train'],
@@ -114,10 +119,11 @@ def get_train_loaders(conf):
         height      = height,
         width       = width,
         crop        = True,
-        num_workers = num_workers
+        num_workers = num_workers,
+        drop_last   = False    # <- 남는 배치라도 하나는 뽑아오도록
     )
 
-    # class(loader)  : B 도메인 (style)
+    # 2) B/user 도메인 style loader
     train_class_loader = loader_from_list(
         root        = conf['data_folder_train_class'],
         file_list   = conf['data_list_train_class'],
@@ -126,10 +132,11 @@ def get_train_loaders(conf):
         height      = height,
         width       = width,
         crop        = True,
-        num_workers = num_workers
+        num_workers = num_workers,
+        drop_last   = False    # <- 반드시 False로 설정!
     )
 
-    # test content loader (A)
+    # 3) A 도메인 test content
     test_content_loader = loader_from_list(
         root        = conf['data_folder_test'],
         file_list   = conf['data_list_test'],
@@ -139,10 +146,10 @@ def get_train_loaders(conf):
         width       = width,
         crop        = True,
         num_workers = 1,
-        drop_last = False
+        drop_last   = False
     )
 
-    # test class loader (B)
+    # 4) B/user 도메인 test style
     test_class_loader = loader_from_list(
         root        = conf['data_folder_test_class'],
         file_list   = conf['data_list_test_class'],
@@ -152,7 +159,7 @@ def get_train_loaders(conf):
         width       = width,
         crop        = True,
         num_workers = 1,
-        drop_last = False
+        drop_last   = False
     )
 
     return (
@@ -161,7 +168,6 @@ def get_train_loaders(conf):
         test_content_loader,
         test_class_loader
     )
-
 
 
 def get_config(config):
