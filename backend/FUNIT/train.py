@@ -72,9 +72,10 @@ output_directory = os.path.join(opts.output_path + "/outputs", model_name)
 checkpoint_directory, image_directory = make_result_folders(output_directory)
 shutil.copy(opts.config, os.path.join(output_directory, 'config.yaml'))
 
-iterations = trainer.resume(checkpoint_directory,
-                            hp=config,
-                            multigpus=opts.multigpus) if opts.resume else 0
+#iterations = trainer.resume(checkpoint_directory,
+#                            hp=config,
+#                            multigpus=opts.multigpus) if opts.resume else 0
+iterations = 0
 
 while True:
     for it, (co_data, cl_data) in enumerate(
