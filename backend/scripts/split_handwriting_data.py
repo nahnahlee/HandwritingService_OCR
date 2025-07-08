@@ -2,34 +2,51 @@
 
 import os, random
 
-def write_all_A(domain_dir, out_dir):
-    """A 도메인의 모든 파일을 파일명만으로 train_A.txt 에 저장합니다."""
-    fnames = sorted(fn for fn in os.listdir(domain_dir) if fn.lower().endswith(".png"))
-    path = os.path.join(out_dir, "train_A.txt")
-    with open(path, "w", encoding="utf-8") as f:
-        for fn in fnames:
-            f.write(fn + "\n")
-    print("✅ A 도메인(train_A.txt) 작성 완료:", path)
+def split_domain(domain_dir, out_dir, list_name, train_ratio=0.8):
+    """
+    domain_dir 안의 이미지 파일을
+    train_ratio 비율로 train_<list_name>.txt / test_<list_name>.txt 로 나눕니다.
+    리스트에는 '파일명.png'만 기록합니다.
+    """
+    fnames = sorted([
+        fn for fn in os.listdir(domain_dir)
+        if fn.lower().endswith((".png", ".jpg", ".jpeg"))
+    ])
+    if not fnames:
+        print(f"⚠️  {domain_dir}에 이미지가 하나도 없습니다.")
+        return
 
-def split_user(domain_dir, out_dir, prefix="user", label=1, ratio=0.8):
-    """B/user 도메인을 train_user.txt/test_user.txt 로 나눕니다."""
-    fnames = sorted(fn for fn in os.listdir(domain_dir)
-                    if fn.lower().endswith((".png", ".jpg", ".jpeg")))
-    rels = [f"{prefix}/{fn} {label}" for fn in fnames]
     random.seed(42)
-    random.shuffle(rels)
-    n = int(len(rels) * ratio)
-    for name, lst in [("train_user.txt", rels[:n]), ("test_user.txt", rels[n:])]:
-        path = os.path.join(out_dir, name)
-        with open(path, "w", encoding="utf-8") as f:
-            f.write("\n".join(lst))
-        print(f"✅ user 도메인({name}) 작성 완료:", path)
+    random.shuffle(fnames)
+    n = int(len(fnames) * train_ratio)
+    train, test = fnames[:n], fnames[n:]
+
+    os.makedirs(out_dir, exist_ok=True)
+    with open(os.path.join(out_dir, f"train_{list_name}.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(train))
+    with open(os.path.join(out_dir, f"test_{list_name}.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(test))
+
+    print(f"✅ {list_name} split: {len(train)} train, {len(test)} test")
+
 
 if __name__ == "__main__":
-    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "hand"))
+    base = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), "..", "data", "hand"
+    ))
 
-    # 1) A 도메인은 전부 학습만 → train_A.txt (레이블 없이 파일명만)
-    write_all_A(os.path.join(base, "A"), base)
+    # A 도메인 (content)
+    split_domain(
+      domain_dir=os.path.join(base, "A"),
+      out_dir=base,
+      list_name="A",
+      train_ratio=1.0
+    )
 
-    # 2) B/user 도메인 → train_user.txt / test_user.txt (경로+레이블)
-    split_user(os.path.join(base, "B", "user"), base)
+    # user 도메인 (style)
+    split_domain(
+      domain_dir=os.path.join(base, "B", "user"),
+      out_dir=base,
+      list_name="user",
+      train_ratio=0.8
+    )
