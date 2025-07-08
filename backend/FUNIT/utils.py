@@ -99,50 +99,67 @@ def get_evaluation_loaders(conf, shuffle_content=False):
 
 
 def get_train_loaders(conf):
-    batch_size = conf['batch_size']
-    num_workers = conf['num_workers']
-    new_size = conf['new_size']
-    width = conf['crop_image_width']
-    height = conf['crop_image_height']
-    train_content_loader = loader_from_list(
-            root=conf['data_folder_train'],
-            file_list=conf['data_list_train'],
-            batch_size=batch_size,
-            new_size=new_size,
-            height=height,
-            width=width,
-            crop=True,
-            num_workers=num_workers)
-    train_class_loader = loader_from_list(
-            root=conf['data_folder_train'],
-            file_list=conf['data_list_train'],
-            batch_size=batch_size,
-            new_size=new_size,
-            height=height,
-            width=width,
-            crop=True,
-            num_workers=num_workers)
-    test_content_loader = loader_from_list(
-            root=conf['data_folder_test'],
-            file_list=conf['data_list_test'],
-            batch_size=batch_size,
-            new_size=new_size,
-            height=height,
-            width=width,
-            crop=True,
-            num_workers=1)
-    test_class_loader = loader_from_list(
-            root=conf['data_folder_test'],
-            file_list=conf['data_list_test'],
-            batch_size=batch_size,
-            new_size=new_size,
-            height=height,
-            width=width,
-            crop=True,
-            num_workers=1)
+    batch_size   = conf['batch_size']
+    num_workers  = conf['num_workers']
+    new_size     = conf['new_size']
+    width        = conf['crop_image_width']
+    height       = conf['crop_image_height']
 
-    return (train_content_loader, train_class_loader, test_content_loader,
-            test_class_loader)
+    # content loader: A 도메인
+    train_content_loader = loader_from_list(
+        root        = conf['data_folder_train'],
+        file_list   = conf['data_list_train'],
+        batch_size  = batch_size,
+        new_size    = new_size,
+        height      = height,
+        width       = width,
+        crop        = True,
+        num_workers = num_workers
+    )
+
+    # class(loader)  : B 도메인 (style)
+    train_class_loader = loader_from_list(
+        root        = conf['data_folder_train_class'],
+        file_list   = conf['data_list_train_class'],
+        batch_size  = batch_size,
+        new_size    = new_size,
+        height      = height,
+        width       = width,
+        crop        = True,
+        num_workers = num_workers
+    )
+
+    # test content loader (A)
+    test_content_loader = loader_from_list(
+        root        = conf['data_folder_test'],
+        file_list   = conf['data_list_test'],
+        batch_size  = batch_size,
+        new_size    = new_size,
+        height      = height,
+        width       = width,
+        crop        = True,
+        num_workers = 1
+    )
+
+    # test class loader (B)
+    test_class_loader = loader_from_list(
+        root        = conf['data_folder_test_class'],
+        file_list   = conf['data_list_test_class'],
+        batch_size  = batch_size,
+        new_size    = new_size,
+        height      = height,
+        width       = width,
+        crop        = True,
+        num_workers = 1
+    )
+
+    return (
+        train_content_loader,
+        train_class_loader,
+        test_content_loader,
+        test_class_loader
+    )
+
 
 
 def get_config(config):
