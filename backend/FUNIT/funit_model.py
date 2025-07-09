@@ -10,26 +10,22 @@ from networks import FewShotGen, GPPatchMcResDis
 def recon_criterion(predict, target):
     return torch.mean(torch.abs(predict - target))
 
-
 class FUNITModel(nn.Module):
     def __init__(self, hp):
         super(FUNITModel, self).__init__()
-        # generator and discriminator
         self.gen = FewShotGen(hp['gen'])
         self.dis = GPPatchMcResDis(hp['dis'])
         self.gen_test = copy.deepcopy(self.gen)
 
-        # Cast normalization buffers and affine params to half for AMP
+        # Cast normalization buffers and affine params to half precision for AMP
         for m in self.modules():
-            # running stats
-            if hasattr(m, 'running_mean'):
+            if hasattr(m, 'running_mean') and isinstance(m.running_mean, torch.Tensor):
                 m.running_mean.data = m.running_mean.data.half()
-            if hasattr(m, 'running_var'):
+            if hasattr(m, 'running_var') and isinstance(m.running_var, torch.Tensor):
                 m.running_var.data = m.running_var.data.half()
-            # weights and biases of norm layers
-            if hasattr(m, 'weight') and m.weight is not None and m.weight.dtype == torch.float32:
+            if hasattr(m, 'weight') and isinstance(m.weight, torch.Tensor):
                 m.weight.data = m.weight.data.half()
-            if hasattr(m, 'bias') and m.bias is not None and m.bias.dtype == torch.float32:
+            if hasattr(m, 'bias') and isinstance(m.bias, torch.Tensor):
                 m.bias.data = m.bias.data.half()
 
     def forward(self, co_data, cl_data, hp, mode):

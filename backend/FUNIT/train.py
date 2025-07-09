@@ -93,7 +93,6 @@ while True:
                 l_total_d, l_fake_p, l_real_pre, l_reg_pre, d_acc = trainer.model(
                     co_data, cl_data, config, 'dis_update'
                 )
-            # external backward and step
             scaler.scale(l_total_d).backward()
             scaler.step(trainer.dis_opt)
             scaler.update()
@@ -109,7 +108,7 @@ while True:
             scaler.update()
 
             torch.cuda.synchronize()
-            print(f'D acc: {d_acc:.4f}\t G acc: {g_acc:.4f}')
+            print(f'D acc: {d_acc:.4f}	 G acc: {g_acc:.4f}')
 
         # Logging
         if (iterations + 1) % config.get('log_iter', 100) == 0:
@@ -131,12 +130,10 @@ while True:
                     'images'
                 )
             with torch.no_grad():
-                # train images
                 for t, (vco, vcl) in enumerate(zip(train_content_loader, train_class_loader)):
                     if t >= opts.test_batch_size: break
                     outs = trainer.test(vco, vcl, opts.multigpus)
                     write_1images(outs, image_directory, f'train_{key_str}_{t:02d}')
-                # test images
                 for t, (tco, tcl) in enumerate(zip(test_content_loader, test_class_loader)):
                     if t >= opts.test_batch_size: break
                     outs = trainer.test(tco, tcl, opts.multigpus)
