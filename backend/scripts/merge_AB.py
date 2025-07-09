@@ -15,7 +15,7 @@ def make_AB_list(a_txt, b_txt, out_txt):
         for l in fb:
             img = l.strip()
             if img:
-                lines.append(f"user/{os.path.basename(img)} 1")
+                lines.append(f"B/user/{os.path.basename(img)} 1")
     # shuffle if you like
     import random; random.shuffle(lines)
     with open(out_txt, 'w', encoding='utf-8') as fo:
