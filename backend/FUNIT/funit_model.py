@@ -49,22 +49,25 @@ class FUNITModel(nn.Module):
             l_total.backward()
             return l_total, l_adv, l_x_rec, l_c_rec, l_m_rec, acc
         elif mode == 'dis_update':
+            # --- 1) forward for real/fake/grad penalty 모두 수행 ---
             xb.requires_grad_()
             l_real_pre, acc_r, resp_r = self.dis.calc_dis_real_loss(xb, lb)
-            l_real = hp['gan_w'] * l_real_pre
-            l_real.backward(retain_graph=True)
+            l_fake_p, acc_f, _    = self.dis.calc_dis_fake_loss(
+                                        self.gen.decode(
+                                            self.gen.enc_content(xa).detach(),
+                                            self.gen.enc_class_model(xb)
+                                        ).detach(), lb)
             l_reg_pre = self.dis.calc_grad2(resp_r, xb)
-            l_reg = 10 * l_reg_pre
-            l_reg.backward()
-            with torch.no_grad():
-                c_xa = self.gen.enc_content(xa)
-                s_xb = self.gen.enc_class_model(xb)
-                xt = self.gen.decode(c_xa, s_xb)
-            l_fake_p, acc_f, resp_f = self.dis.calc_dis_fake_loss(xt.detach(),
-                                                                  lb)
+
+            # --- 2) 손실 가중치 곱하고 합치기 ---
+            l_real = hp['gan_w'] * l_real_pre
             l_fake = hp['gan_w'] * l_fake_p
-            l_fake.backward()
-            l_total = l_fake + l_real + l_reg
+            l_reg  = 10 * l_reg_pre
+            l_total = l_real + l_fake + l_reg
+
+            # --- 3) backward 한 번으로 끝! ---
+            l_total.backward()
+
             acc = 0.5 * (acc_f + acc_r)
             return l_total, l_fake_p, l_real_pre, l_reg_pre, acc
         else:
