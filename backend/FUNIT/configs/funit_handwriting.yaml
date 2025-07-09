@@ -29,6 +29,13 @@ dis:
   n_res_blks:  10
   num_classes: 2    # A vs user 두 개 도메인
 
+# ─── 데이터 옵션 ────────────────────────────────────────────
+num_workers:       4      # ← 반드시 추가
+batch_size:        16
+new_size:          128
+crop_image_height: 128
+crop_image_width:  128
+
 # Content loader (A)
 data_folder_train:       "../data/hand/A"
 data_list_train:         "../data/hand/train_A.txt"
