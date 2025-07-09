@@ -1,0 +1,31 @@
+diff a/backend/FUNIT/train.py b/backend/FUNIT/train.py	(rejected hunks)
+@@ -86,9 +86,26 @@
+     for it, (co_data, cl_data) in enumerate(
+             zip(train_content_loader, train_class_loader)):
+         with Timer("Elapsed time in update: %f"):
+-            d_acc = trainer.dis_update(co_data, cl_data, config)
+-            g_acc = trainer.gen_update(co_data, cl_data, config,
+-                                       opts.multigpus)
++            # --- Discriminator update with AMP ---
++            trainer.dis_opt.zero_grad()
++            with autocast():
++                al, lfa, lre, reg, acc = trainer.model(co_data, cl_data, config, 'dis_update')
++                loss_dis = torch.mean(al)   # trainer 내부에서 mean 한 값
++                scaler.scale(loss_dis).backward()
++                scaler.step(trainer.dis_opt)
++                scaler.update()
++                d_acc = acc
++
++            # --- Generator update with AMP ---
++            trainer.gen_opt.zero_grad()
++            with autocast():
++                al, ad, xr, cr, sr, ac = trainer.model(co_data, cl_data, config, 'gen_update')
++                loss_gen = torch.mean(al)
++            scaler.scale(loss_gen).backward()
++            scaler.step(trainer.gen_opt)
++            scaler.update()
++            g_acc = ac
++
+             torch.cuda.synchronize()
+             print('D acc: %.4f\t G acc: %.4f' % (d_acc, g_acc))
+ 

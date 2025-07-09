@@ -1,12 +1,9 @@
-# train.py (updated for AMP integration with external backward)
+# train.py (AMP removed, pure FP32 training)
 import torch
 import os
 import sys
 import argparse
 import shutil
-
-from torch.cuda.amp import autocast, GradScaler
-scaler = GradScaler()
 
 import torch.backends.cudnn as cudnn
 cudnn.benchmark = True
@@ -51,7 +48,7 @@ max_iter = config.get('max_iter', 0)
 if opts.batch_size != 0:
     config['batch_size'] = opts.batch_size
 
-# Initialize trainer/model
+# Initialize trainer and model
 trainer = Trainer(config)
 trainer.cuda()
 if opts.multigpus:
@@ -81,34 +78,30 @@ shutil.copy(opts.config, os.path.join(output_directory, 'config.yaml'))
 # Training loop
 iterations = 0
 if opts.resume:
-    # resume logic if implemented
+    # Implement resume logic here if needed
     pass
 
 while True:
     for co_data, cl_data in zip(train_content_loader, train_class_loader):
         with Timer("Elapsed time in update: %f"):
-            # Discriminator update with AMP
+            # Discriminator update (pure FP32)
             trainer.dis_opt.zero_grad()
-            with autocast():
-                l_total_d, l_fake_p, l_real_pre, l_reg_pre, d_acc = trainer.model(
-                    co_data, cl_data, config, 'dis_update'
-                )
-            scaler.scale(l_total_d).backward()
-            scaler.step(trainer.dis_opt)
-            scaler.update()
+            l_total_d, l_fake_p, l_real_pre, l_reg_pre, d_acc = trainer.model(
+                co_data, cl_data, config, 'dis_update'
+            )
+            l_total_d.backward()
+            trainer.dis_opt.step()
 
-            # Generator update with AMP
+            # Generator update (pure FP32)
             trainer.gen_opt.zero_grad()
-            with autocast():
-                l_total_g, l_adv, l_x_rec, l_c_rec, l_m_rec, g_acc = trainer.model(
-                    co_data, cl_data, config, 'gen_update'
-                )
-            scaler.scale(l_total_g).backward()
-            scaler.step(trainer.gen_opt)
-            scaler.update()
+            l_total_g, l_adv, l_x_rec, l_c_rec, l_m_rec, g_acc = trainer.model(
+                co_data, cl_data, config, 'gen_update'
+            )
+            l_total_g.backward()
+            trainer.gen_opt.step()
 
             torch.cuda.synchronize()
-            print(f'D acc: {d_acc:.4f}	 G acc: {g_acc:.4f}')
+            print(f'D acc: {d_acc:.4f}\t G acc: {g_acc:.4f}')
 
         # Logging
         if (iterations + 1) % config.get('log_iter', 100) == 0:
@@ -130,12 +123,16 @@ while True:
                     'images'
                 )
             with torch.no_grad():
+                # Training images
                 for t, (vco, vcl) in enumerate(zip(train_content_loader, train_class_loader)):
-                    if t >= opts.test_batch_size: break
+                    if t >= opts.test_batch_size:
+                        break
                     outs = trainer.test(vco, vcl, opts.multigpus)
                     write_1images(outs, image_directory, f'train_{key_str}_{t:02d}')
+                # Testing images
                 for t, (tco, tcl) in enumerate(zip(test_content_loader, test_class_loader)):
-                    if t >= opts.test_batch_size: break
+                    if t >= opts.test_batch_size:
+                        break
                     outs = trainer.test(tco, tcl, opts.multigpus)
                     write_1images(outs, image_directory, f'test_{key_str}_{t:02d}')
 

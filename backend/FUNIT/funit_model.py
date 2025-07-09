@@ -17,14 +17,6 @@ class FUNITModel(nn.Module):
         self.dis = GPPatchMcResDis(hp['dis'])
         self.gen_test = copy.deepcopy(self.gen)
 
-        # Cast normalization buffers to half precision for AMP
-        for m in self.modules():
-            if hasattr(m, 'running_mean') and isinstance(m.running_mean, torch.Tensor):
-                m.running_mean.data = m.running_mean.data.half()
-            if hasattr(m, 'running_var') and isinstance(m.running_var, torch.Tensor):
-                m.running_var.data = m.running_var.data.half()
-        # Note: preserve weight/bias in full precision to avoid FP16 gradient issues
-
     def forward(self, co_data, cl_data, hp, mode):
         xa, la = co_data[0].cuda(), co_data[1].cuda()
         xb, lb = cl_data[0].cuda(), cl_data[1].cuda()
