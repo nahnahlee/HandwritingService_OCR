@@ -1,4 +1,4 @@
-# funit_model.py (updated: remove internal backward calls)
+# funit_model.py (updated: remove internal backward calls + half-precision norm buffers)
 import copy
 
 import torch
@@ -14,26 +14,36 @@ def recon_criterion(predict, target):
 class FUNITModel(nn.Module):
     def __init__(self, hp):
         super(FUNITModel, self).__init__()
+        # generator and discriminator
         self.gen = FewShotGen(hp['gen'])
         self.dis = GPPatchMcResDis(hp['dis'])
         self.gen_test = copy.deepcopy(self.gen)
+
+        # Cast normalization buffers and affine params to half for AMP
+        for m in self.modules():
+            # running stats
+            if hasattr(m, 'running_mean'):
+                m.running_mean.data = m.running_mean.data.half()
+            if hasattr(m, 'running_var'):
+                m.running_var.data = m.running_var.data.half()
+            # weights and biases of norm layers
+            if hasattr(m, 'weight') and m.weight is not None and m.weight.dtype == torch.float32:
+                m.weight.data = m.weight.data.half()
+            if hasattr(m, 'bias') and m.bias is not None and m.bias.dtype == torch.float32:
+                m.bias.data = m.bias.data.half()
 
     def forward(self, co_data, cl_data, hp, mode):
         xa, la = co_data[0].cuda(), co_data[1].cuda()
         xb, lb = cl_data[0].cuda(), cl_data[1].cuda()
 
         if mode == 'gen_update':
-            # content & style encodings
             c_xa = self.gen.enc_content(xa)
             s_xa = self.gen.enc_class_model(xa)
             s_xb = self.gen.enc_class_model(xb)
-            # decode
             xt = self.gen.decode(c_xa, s_xb)
             xr = self.gen.decode(c_xa, s_xa)
-            # GAN losses
             l_adv_t, gacc_t, xt_feat = self.dis.calc_gen_loss(xt, lb)
             l_adv_r, gacc_r, xr_feat = self.dis.calc_gen_loss(xr, la)
-            # feature reconstruction
             _, xb_feat = self.dis(xb, lb)
             _, xa_feat = self.dis(xa, la)
             l_c_rec = recon_criterion(
@@ -42,9 +52,7 @@ class FUNITModel(nn.Module):
             l_m_rec = recon_criterion(
                 xt_feat.mean((2, 3)), xb_feat.mean((2, 3))
             )
-            # image reconstruction
             l_x_rec = recon_criterion(xr, xa)
-            # combine
             l_adv = 0.5 * (l_adv_t + l_adv_r)
             acc = 0.5 * (gacc_t + gacc_r)
             l_total = (
@@ -56,16 +64,13 @@ class FUNITModel(nn.Module):
 
         elif mode == 'dis_update':
             xb.requires_grad_(True)
-            # real/fake losses
             l_real_p, acc_r, resp_r = self.dis.calc_dis_real_loss(xb, lb)
             fake_img = self.gen.decode(
                 self.gen.enc_content(xa).detach(),
                 self.gen.enc_class_model(xb)
             ).detach()
             l_fake_p, acc_f, _ = self.dis.calc_dis_fake_loss(fake_img, lb)
-            # gradient penalty
             l_reg_p = self.dis.calc_grad2(resp_r, xb)
-            # weight & combine
             l_real = hp['gan_w'] * l_real_p
             l_fake = hp['gan_w'] * l_fake_p
             l_reg  = 10 * l_reg_p
@@ -80,6 +85,15 @@ class FUNITModel(nn.Module):
         self.eval()
         xa = co_data[0].cuda()
         xb = cl_data[0].cuda()
-        # ... (unchanged testing code) ...
+        c_xa_current = self.gen.enc_content(xa)
+        s_xa_current = self.gen.enc_class_model(xa)
+        s_xb_current = self.gen.enc_class_model(xb)
+        xt_current = self.gen.decode(c_xa_current, s_xb_current)
+        xr_current = self.gen.decode(c_xa_current, s_xa_current)
+        c_xa = self.gen_test.enc_content(xa)
+        s_xa = self.gen_test.enc_class_model(xa)
+        s_xb = self.gen_test.enc_class_model(xb)
+        xt = self.gen_test.decode(c_xa, s_xb)
+        xr = self.gen_test.decode(c_xa, s_xa)
         self.train()
-        return xa, None, None, xb, None, None
+        return xa, xr_current, xt_current, xb, xr, xt
